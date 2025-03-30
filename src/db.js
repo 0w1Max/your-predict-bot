@@ -14,11 +14,30 @@ pool.on('connect', () => {
   logger.info('✅ Подключение к PostgreSQL успешно!');
 });
 
-pool.query(`
-  CREATE TABLE IF NOT EXISTS predictions (
-    id SERIAL PRIMARY KEY,
-    text TEXT NOT NULL
-  );
-`).catch(err => logger.error('❌ Ошибка создания таблицы:', err));
+pool.on('error', (err) => {
+  logger.error('❌ Ошибка подключения к PostgreSQL:', err);
+});
+
+(async () => {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS predictions (
+        id SERIAL PRIMARY KEY,
+        text TEXT NOT NULL
+      );
+    `);
+    logger.info('✅ Таблица predictions проверена/создана.');
+  } catch (err) {
+    logger.error('❌ Ошибка создания таблицы:', err);
+  }
+})();
+
+// Закрытие пула при завершении работы
+process.on('SIGINT', async () => {
+  logger.info('⏳ Завершение работы, закрытие соединения с БД...');
+  await pool.end();
+  logger.info('✅ Соединение с PostgreSQL закрыто.');
+  process.exit(0);
+});
 
 module.exports = pool;
