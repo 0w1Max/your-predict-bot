@@ -11,6 +11,13 @@ pool.on('connect', () => {
   logger.info('✅ Подключение к PostgreSQL успешно!');
 });
 
+pool.query(`
+  CREATE TABLE IF NOT EXISTS predictions (
+    id SERIAL PRIMARY KEY,
+    text TEXT NOT NULL
+  );
+`).catch(err => logger.error('❌ Ошибка создания таблицы:', err));
+
 pool.on('error', (err) => {
   logger.error('❌ Ошибка подключения к PostgreSQL:', err);
 });
