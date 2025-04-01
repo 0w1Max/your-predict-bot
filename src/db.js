@@ -16,8 +16,9 @@ const initDB = async () => {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS predictions (
         id SERIAL PRIMARY KEY,
+        chat_id BIGINT NOT NULL,
         text TEXT NOT NULL
-      );
+    );
     `);
     logger.info('✅ Таблица predictions проверена/создана.');
   } catch (err) {
