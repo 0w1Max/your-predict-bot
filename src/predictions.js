@@ -4,20 +4,23 @@ const logger = require('./logger');
 const getRandomPrediction = async () => {
   try {
     const res = await pool.query('SELECT text FROM predictions ORDER BY RANDOM() LIMIT 1');
-    return res.rows[0]?.text || 'В базе нет предсказаний!';
+    if (res.rows.length === 0) {
+      return '❌ В базе нет предсказаний!';
+    }
+    return res.rows[0].text;
   } catch (err) {
-    logger.error(`Ошибка при получении предсказания: ${err.message}`);
-    return 'Ошибка при получении предсказания!';
+    logger.error(`❌ Ошибка при получении предсказания: ${err.message}`);
+    return '❌ Ошибка при получении предсказания!';
   }
 };
 
 const addPrediction = async (text) => {
   try {
     await pool.query('INSERT INTO predictions (text) VALUES ($1)', [text]);
-    return true;
+    return { success: true, message: '✅ Предсказание добавлено!' };
   } catch (err) {
-    logger.error(`Ошибка при добавлении предсказания: ${err.message}`);
-    return false;
+    logger.error(`❌ Ошибка при добавлении предсказания: ${err.message}`);
+    return { success: false, message: err.message };
   }
 };
 

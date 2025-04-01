@@ -5,6 +5,8 @@ const handleCommands = async (bot, msg) => {
   const chatId = msg.chat.id;
   const text = msg.text.trim();
 
+  logger.info(`📩 Команда от ${chatId}: ${text}`);
+
   if (text === '/start') {
     bot.sendMessage(chatId, 'Привет! 🔮 Я бот предсказаний. Напиши /predict, чтобы получить предсказание.');
   } 
@@ -24,8 +26,8 @@ const handleCommands = async (bot, msg) => {
     }
 
     try {
-      const success = await addPrediction(newPrediction);
-      bot.sendMessage(chatId, success ? '✅ Предсказание добавлено!' : '❌ Ошибка при добавлении.');
+      const { success, message } = await addPrediction(newPrediction);
+      bot.sendMessage(chatId, message);
     } catch (err) {
       logger.error(`❌ Ошибка при добавлении предсказания: ${err.message}`);
       bot.sendMessage(chatId, '❌ Ошибка при добавлении предсказания.');
