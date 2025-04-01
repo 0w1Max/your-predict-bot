@@ -1,5 +1,6 @@
 const TelegramBot = require('node-telegram-bot-api');
 const { handleCommands } = require('./commands');
+const { getRandomPrediction } = require('./predictions');
 const logger = require('./logger');
 const db = require('./db');
 require('dotenv').config();
