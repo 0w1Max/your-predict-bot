@@ -11,6 +11,25 @@ bot.on('message', (msg) => {
   handleCommands(bot, msg);
 });
 
+bot.on('channel_post', async (msg) => {
+  const chatId = msg.chat.id;
+  const text = msg.text?.trim();
+
+  if (!text) return;
+
+  logger.info(`📩 Команда из канала ${chatId}: ${text}`);
+
+  if (text === '/predict') {
+    try {
+      const prediction = await getRandomPrediction();
+      bot.sendMessage(chatId, `🔮 Предсказание: ${prediction}`);
+    } catch (err) {
+      logger.error(`❌ Ошибка получения предсказания: ${err.message}`);
+      bot.sendMessage(chatId, '❌ Ошибка при получении предсказания.');
+    }
+  }
+});
+
 logger.info('✅ Бот запущен!');
 console.log('✅ Бот запущен!');
 
