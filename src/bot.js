@@ -47,7 +47,7 @@ process.on('unhandledRejection', (reason, promise) => {
 process.on('SIGINT', () => {
   logger.info('🛑 Остановка бота...');
   bot.stopPolling();
-  db.close(() => {
+  db.end(() => {
     logger.info('✅ Соединение с базой закрыто.');
     process.exit(0);
   });
