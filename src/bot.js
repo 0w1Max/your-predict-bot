@@ -8,52 +8,43 @@ require('dotenv').config();
 const bot = new TelegramBot(process.env.BOT_TOKEN, { polling: true });
 
 bot.on('message', (msg) => {
-  logger.info(`Получено сообщение от ${msg.chat.id}: ${msg.text}`);
+  logger.info(`📩 Получено сообщение от ${msg.chat.id}: ${msg.text}`);
   handleCommands(bot, msg);
 });
 
-bot.on('channel_post', async (msg) => {
-  const chatId = msg.chat.id;
-  const text = msg.text?.trim();
+// 🔹 Обработка нажатий инлайн-кнопок
+bot.on('callback_query', async (query) => {
+  const chatId = query.message.chat.id;
 
-  if (!text) return;
-
-  logger.info(`📩 Команда из канала ${chatId}: ${text}`);
-
-  if (text === '/predict') {
-    try {
-      const prediction = await getRandomPrediction(chatId); // Исправлено: передаём chatId
-      bot.sendMessage(chatId, `🔮 Предсказание: ${prediction}`);
-    } catch (err) {
-      logger.error(`❌ Ошибка получения предсказания: ${err.message}`);
-      bot.sendMessage(chatId, '❌ Ошибка при получении предсказания.');
-    }
+  if (query.data === 'predict') {
+    const prediction = await getRandomPrediction();
+    bot.sendMessage(chatId, `🔮 Твоё предсказание: ${prediction}`);
+  } 
+  else if (query.data === 'add') {
+    bot.sendMessage(chatId, '✍️ Напишите предсказание в формате: /add [текст]');
   }
+
+  bot.answerCallbackQuery(query.id);
 });
 
 logger.info('✅ Бот запущен!');
 console.log('✅ Бот запущен!');
 
-// Обработчик ошибок
+// 🔹 Обработчик ошибок
 process.on('uncaughtException', (err) => {
   logger.error('⚠️ Необработанная ошибка:', err);
-  process.exit(1); // Исправлено: теперь бот завершает работу при критической ошибке
 });
 
-process.on('unhandledRejection', (reason) => {
+process.on('unhandledRejection', (reason, promise) => {
   logger.warn('⚠️ Необработанный промис:', reason);
-  process.exit(1); // Исправлено: теперь бот корректно завершает работу при ошибке в промисах
 });
 
-// Закрываем соединение
-process.on('SIGINT', async () => {
+// 🔹 Закрытие соединения при остановке бота
+process.on('SIGINT', () => {
   logger.info('🛑 Остановка бота...');
   bot.stopPolling();
-  try {
-    await db.end(); // Исправлено: используем правильный метод для закрытия соединения
+  db.close(() => {
     logger.info('✅ Соединение с базой закрыто.');
-  } catch (err) {
-    logger.error('❌ Ошибка при закрытии соединения с базой:', err);
-  }
-  process.exit(0);
+    process.exit(0);
+  });
 });
