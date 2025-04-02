@@ -22,7 +22,7 @@ bot.on('channel_post', async (msg) => {
 
   if (text === '/predict') {
     try {
-      const prediction = await getRandomPrediction();
+      const prediction = await getRandomPrediction(chatId); // Исправлено: передаём chatId
       bot.sendMessage(chatId, `🔮 Предсказание: ${prediction}`);
     } catch (err) {
       logger.error(`❌ Ошибка получения предсказания: ${err.message}`);
@@ -37,18 +37,23 @@ console.log('✅ Бот запущен!');
 // Обработчик ошибок
 process.on('uncaughtException', (err) => {
   logger.error('⚠️ Необработанная ошибка:', err);
+  process.exit(1); // Исправлено: теперь бот завершает работу при критической ошибке
 });
 
-process.on('unhandledRejection', (reason, promise) => {
+process.on('unhandledRejection', (reason) => {
   logger.warn('⚠️ Необработанный промис:', reason);
+  process.exit(1); // Исправлено: теперь бот корректно завершает работу при ошибке в промисах
 });
 
 // Закрываем соединение
-process.on('SIGINT', () => {
+process.on('SIGINT', async () => {
   logger.info('🛑 Остановка бота...');
   bot.stopPolling();
-  db.end(() => {
+  try {
+    await db.end(); // Исправлено: используем правильный метод для закрытия соединения
     logger.info('✅ Соединение с базой закрыто.');
-    process.exit(0);
-  });
+  } catch (err) {
+    logger.error('❌ Ошибка при закрытии соединения с базой:', err);
+  }
+  process.exit(0);
 });
