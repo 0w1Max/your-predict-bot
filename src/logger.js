@@ -1,13 +1,18 @@
-const log4js = require('log4js');
+const { createLogger, transports, format } = require('winston');
+const path = require('path');
 
-log4js.configure({
-  appenders: {
-    file: { type: 'file', filename: '../logs/bot.log', maxLogSize: 1048576, backups: 3, compress: true },
-    console: { type: 'console' }
-  },
-  categories: { default: { appenders: ['file', 'console'], level: 'info' } }
+const logger = createLogger({
+  level: 'info',
+  format: format.combine(
+    format.timestamp(),
+    format.printf(({ timestamp, level, message }) => {
+      return `[${timestamp}] [${level.toUpperCase()}] ${message}`;
+    })
+  ),
+  transports: [
+    new transports.Console(),
+    new transports.File({ filename: path.join(__dirname, '../logs/bot.log') })
+  ],
 });
-
-const logger = log4js.getLogger();
 
 module.exports = logger;

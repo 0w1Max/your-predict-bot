@@ -7,35 +7,19 @@ const handleCommands = async (bot, msg) => {
 
   if (!text) return;
 
-  logger.info(`📩 Команда из канала ${chatId}: ${text}`);
-
   if (text === '/start') {
-    bot.sendMessage(chatId, 'Привет! 🔮 Я бот предсказаний. Напиши /predict, чтобы получить предсказание.');
-  } 
-  else if (text === '/predict') {
-    try {
-      const prediction = await getRandomPrediction(chatId);
-      bot.sendMessage(chatId, `🔮 Твоё предсказание: ${prediction}`);
-    } catch (err) {
-      logger.error(`❌ Ошибка получения предсказания: ${err.message}`);
-      bot.sendMessage(chatId, '❌ Произошла ошибка при получении предсказания.');
-    }
-  } 
-  else if (text.startsWith('/add ')) {
-    const newPrediction = text.slice(5).trim();
+    bot.sendMessage(chatId, 'Привет! 🔮 Я бот предсказаний. Используй /predict, чтобы получить предсказание.');
+  } else if (text === '/predict') {
+    const prediction = await getRandomPrediction(chatId);
+    bot.sendMessage(chatId, `🔮 Твоё предсказание: ${prediction}`);
+  } else if (text.startsWith('/add')) {
+    const newPrediction = text.replace('/add', '').trim();
     if (!newPrediction) {
       return bot.sendMessage(chatId, '⚠️ Использование: /add [текст предсказания]');
     }
-
-    try {
-      const success = await addPrediction(chatId, newPrediction);
-      bot.sendMessage(chatId, success ? '✅ Предсказание добавлено!' : '❌ Ошибка при добавлении.');
-    } catch (err) {
-      logger.error(`❌ Ошибка при добавлении предсказания: ${err.message}`);
-      bot.sendMessage(chatId, '❌ Ошибка при добавлении предсказания.');
-    }
-  } 
-  else {
+    const success = await addPrediction(chatId, newPrediction);
+    bot.sendMessage(chatId, success ? '✅ Предсказание добавлено!' : '❌ Ошибка при добавлении.');
+  } else {
     bot.sendMessage(chatId, '⚠️ Неизвестная команда. Используйте /predict или /add [текст предсказания]');
   }
 };
